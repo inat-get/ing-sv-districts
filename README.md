@@ -13,7 +13,7 @@
 
 ### Установка
 
-```shell
+```bash
 git clone https://github.com/inat-get/ing-sv-districts.git
 cd ing-sv-districts
 bundle install
