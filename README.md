@@ -25,3 +25,9 @@ bundle install
 bundle exec ruby generate.rb
 ```
 Это сформирует скрипты для вызова в подкаталоге `generated` и их список в `generated.lst`.
+
+### Запуск
+
+```shell
+bundle exec inat-get -c inat-get.yml @generated.lst
+```
