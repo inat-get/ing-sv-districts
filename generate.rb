@@ -20,25 +20,34 @@ DISTRICTS.each do |key, _|
 end
 
 ZONES.each do |key, _|
-  File.open "generated/#{key}.rb", "w" do |file|
-    file.puts "# frozen_string_literal: true"
+  File.open "generated/#{ key }.rb", "w" do |file|
+    file.puts '# frozen_string_literal: true'
     file.puts ''
     file.puts "require_relative '../lib/report'"
     file.puts ''
     file.puts "make_aria_reports '#{ key }'"
   end
-  list.puts "generated/#{key}.rb"
+  list.puts "generated/#{ key }.rb"
 end
 
 SPECIALS.each do |key, _|
-  File.open "generated/#{key}.rb", "w" do |file|
-    file.puts "# frozen_string_literal: true"
+  File.open "generated/#{ key }.rb", "w" do |file|
+    file.puts '# frozen_string_literal: true'
     file.puts ''
     file.puts "require_relative '../lib/report'"
     file.puts ''
     file.puts "make_special_reports '#{ key }'"
   end
-  list.puts "generated/#{key}.rb"
+  list.puts "generated/#{ key }.rb"
 end
+
+File.open 'generated/bioraznoobrazie-rayonov-sverdlovskoy-oblasti.rb', 'w' do |file|
+  file.puts '# frozen_string_literal: true'
+  file.puts ''
+  file.puts "require_relative '../lib/report'"
+  file.puts ''
+  file.puts "make_summary_report 'bioraznoobrazie-rayonov-sverdlovskoy-oblasti'"
+end
+list.puts 'generated/bioraznoobrazie-rayonov-sverdlovskoy-oblasti.rb'
 
 list.close
