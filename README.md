@@ -13,8 +13,15 @@
 
 ### Установка
 
-```bash
+```shell
 git clone https://github.com/inat-get/ing-sv-districts.git
 cd ing-sv-districts
 bundle install
 ```
+
+### Подготовка
+
+```shell
+bundle exec ruby generate.rb
+```
+Это сформирует скрипты для вызова в подкаталоге `generated` и их список в `generated.lst`.
