@@ -9,3 +9,12 @@
 + Скрипты выдаеют результат как бы в формате Markdown, но в действительности это упрощенный HTML специально для постов
   в журналах проектов iNaturalist.
 
+## Использование
+
+### Установка
+
+```shell
+git clone https://github.com/inat-get/ing-sv-districts.git
+cd ing-sv-districts
+bundle install
+```
