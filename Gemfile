@@ -2,4 +2,5 @@
 
 source "https://rubygems.org"
 
-gem 'inat-get', '~> 0.9'
+gem 'sqlite3'
+gem 'inat-get', '~> 0.9.0.8' # path: '../inat-get'

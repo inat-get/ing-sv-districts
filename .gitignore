@@ -56,5 +56,6 @@ build-iPhoneSimulator/
 # .rubocop-https?--*
 .vscode/
 
+output/
 generated/
 generated.lst

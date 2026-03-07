@@ -10,7 +10,7 @@ GEM
       net-http (~> 0.5)
     faraday-retry (2.4.0)
       faraday (~> 2.0)
-    inat-get (0.9.0.2)
+    inat-get (0.9.0.8)
       faraday (~> 2.14)
       faraday-retry (~> 2.3)
       is-deep (~> 0.8)
@@ -37,22 +37,23 @@ GEM
       uri (>= 0.11.1)
     sequel (5.102.0)
       bigdecimal
+    sqlite3 (2.9.1-x86_64-linux-gnu)
     tty-screen (0.8.2)
     uri (1.1.1)
 
 PLATFORMS
-  ruby
   x86_64-linux
 
 DEPENDENCIES
-  inat-get (~> 0.9)
+  inat-get (~> 0.9.0.8)
+  sqlite3
 
 CHECKSUMS
   bigdecimal (4.0.1) sha256=8b07d3d065a9f921c80ceaea7c9d4ae596697295b584c296fe599dd0ad01c4a7
   faraday (2.14.1) sha256=a43cceedc1e39d188f4d2cdd360a8aaa6a11da0c407052e426ba8d3fb42ef61c
   faraday-net_http (3.4.2) sha256=f147758260d3526939bf57ecf911682f94926a3666502e24c69992765875906c
   faraday-retry (2.4.0) sha256=7b79c48fb7e56526faf247b12d94a680071ff40c9fda7cf1ec1549439ad11ebe
-  inat-get (0.9.0.2) sha256=6dc46085d07a0b3d8e599f7d4ed27b0effbf03f1b035bbc2d4021226cd6ab60c
+  inat-get (0.9.0.8) sha256=834b26469d99a35cd0c9b0a036cc26da1cb8adcb454a1db8e1d66b68cbf48193
   is-boolean (0.8.0) sha256=a470c0407307fc3e71e785ac3847d500abd157e8874e94747a713050572afdb3
   is-deep (0.8.0) sha256=49b4bef09b6520fedf4620c50878b1f04d8fb78a51352fac0591d6d605f7fe04
   is-dsl (0.8.0) sha256=fc66508e85da3c9f4cdcdc31e9bb078f2aef791dfe432db1db931c69c97020e6
@@ -64,6 +65,7 @@ CHECKSUMS
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   net-http (0.9.1) sha256=25ba0b67c63e89df626ed8fac771d0ad24ad151a858af2cc8e6a716ca4336996
   sequel (5.102.0) sha256=c25bb85a44ae59b3ed41ca7c32c33316cf81a6fcaeabedb4036ba141dde70919
+  sqlite3 (2.9.1-x86_64-linux-gnu) sha256=1cbb644204ed143e5c96f6d59b5c571ba6f18b18a9dc5aa11c101187ff227afd
   tty-screen (0.8.2) sha256=c090652115beae764336c28802d633f204fb84da93c6a968aa5d8e319e819b50
   uri (1.1.1) sha256=379fa58d27ffb1387eaada68c749d1426738bd0f654d812fcc07e7568f5c57c6
 
