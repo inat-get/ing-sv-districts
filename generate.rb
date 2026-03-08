@@ -25,7 +25,7 @@ ZONES.each do |key, _|
     file.puts ''
     file.puts "require_relative '../lib/report'"
     file.puts ''
-    file.puts "make_aria_reports '#{ key }'"
+    file.puts "make_area_reports '#{ key }'"
   end
   list.puts "generated/#{ key }.rb"
 end
