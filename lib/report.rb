@@ -13,13 +13,12 @@ class BaseReport
   extend INatGet::Data::DSL
 
   PREAMBLE = <<~TXT
-    <i>Учитываются только наблюдения исследовательского уровня. В подсчете видов — только виды и гибриды — старшие таксоны игнорируются, младшие приводятся к видам. Из-за этого выборки по наблюдениям и видам могут разходиться между собой.</i>
+    <i>Учитываются только наблюдения исследовательского уровня. В подсчете видов — только виды и гибриды — старшие таксоны игнорируются, младшие приводятся к видам. Из-за этого выборки по наблюдениям и видам могут расходиться между собой.</i>
   TXT
 
   SIGNATURE = <<~TXT
     <hr>
     <small>Отчет составлен посредством <a href=\"https://github.com/inat-get/inat-get\">🌿 iNatGet v#{version}</a>, конкретные скрипты отчетов размещены в <a href=\"https://github.com/inat-get/ing-sv-districts\">отдельном репозитории</a>.
-    См. также tg-канал <a href=\"https://t.me/inat_sverdlobl\">«Биоразнообразие Свердловской области в TG»</a> и его чат.</small>
   TXT
 
   LAST_YEAR = today.year - 1
@@ -58,7 +57,7 @@ class BaseReport
   end
 
   def taxon_html taxon
-    "<a href=\"https://www.naturalist.org/taxa/#{ taxon.id }\">#{ taxon_icon taxon } #{ taxon_name taxon }</a>"
+    "<a href=\"https://www.inaturalist.org/taxa/#{ taxon.id }\">#{ taxon_icon taxon } #{ taxon_name taxon }</a>"
   end
 
   def taxon_icon taxon
@@ -71,6 +70,21 @@ class BaseReport
     else
       "<i>#{ taxon.name }</i>"
     end
+  end
+
+  def subject_html subject
+    title, icon = if subject.is_a?(INatGet::Data::Model::Place)
+      [subject.display_name || subject.name, '<i class="fa fa-globe"></i>']
+    else
+      [subject.title, '<i class="fa fa-briefcase"></i>']
+    end
+    url = "https://www.inaturalist.org/#{subject.class.endpoint}/#{subject.id}"
+    "<a href=\"#{url}\">#{icon}  #{title}</a>"
+  end
+
+  def epilogue
+    umbrella = get_project 'bioraznoobrazie-rayonov-sverdlovskoy-oblasti'
+    "<i>Присоединяйтесь к данному проекту — «#{ subject_html @project }».\nИ обратите внимание на зонтичный — «#{ subject_html umbrella }», а также соответствующие <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
   end
 
   def make_history
@@ -147,6 +161,8 @@ class DistrictReport < BaseReport
   def tops_header
     result = []
     result << '## Лучшие наблюдатели'
+    result << ''
+    result << 'Топ-10 из набравших не менее 10 видов.'
     result << ''
     result.join("\n")
   end
@@ -277,6 +293,8 @@ class DistrictReport < BaseReport
     result << ''
     result << make_news
     result << ''
+    result << epilogue
+    result << ''
     result << SIGNATURE
     File.write "output/#{ @slug } - history.md", result.join("\n")
   end
@@ -294,16 +312,6 @@ class DistrictReport < BaseReport
       dataset = select_observations(place: place, observed: (... finish_time(year: LAST_YEAR)), **@opts)
       @neighbors[place] = { dataset: dataset, species: (dataset % :species), users: (dataset % :user).count }
     end
-  end
-
-  def subject_html subject
-    title, icon = if subject.is_a?(INatGet::Data::Model::Place)
-      [ subject.display_name || subject.name, '<i class="fa fa-globe"></i>' ]
-    else
-      [ subject.title, '<i class="fa fa-briefcase"></i>' ]
-    end
-    url = "https://www.inaturalist.org/#{ subject.class.endpoint }/#{ subject.id }"
-    "<a href=\"#{ url }\">#{ icon }  #{ title }</a>"
   end
 
   def neighbors_table
@@ -470,6 +478,8 @@ class DistrictReport < BaseReport
     result << ''
     result << make_wanted
     result << ''
+    result << epilogue
+    result << ''
     result << SIGNATURE
     File.write "output/#{ @slug } - comparison.md", result.join("\n")
   end
@@ -477,6 +487,46 @@ class DistrictReport < BaseReport
 end
 
 class AreaReport < DistrictReport
+
+  def load_data
+    @project = get_project @slug
+    content = ZONES[@slug][:content]
+    content.each do |subslug|
+      prj = get_project subslug
+      dts = select_observations(project: prj, observed: (... LAST_TIME), **@opts)
+      dts.update!
+      unless @dataset
+        @dataset = dts
+      else
+        @dataset += dts
+      end
+    end
+  end
+
+  def load_neighbors
+    @neighbors = {}
+    neighbors = ZONES.reject { |k, _| k == @slug }
+    neighbors.each do |key, value|
+      project = get_project key
+      content = value[:content]
+      dataset = nil
+      content.each do |subslug|
+        prj = get_project subslug
+        dts = select_observations(project: prj, observed: (... LAST_TIME), **@opts)
+        dts.update!
+        unless dataset
+          dataset = dts
+        else
+          dataset += dts
+        end
+      end
+      @neighbors[project] = { dataset: dataset, species: (dataset % :species), users: (dataset % :user).count }
+    end
+    ekb = get_project "bioraznoobrazie-ekaterinburga"
+    dataset = select_observations(project: ekb, observed: (... LAST_TIME), **@opts)
+    @neighbors[ekb] = { dataset: dataset, species: (dataset % :species), users: (dataset % :user).count }
+  end
+
 end
 
 class SpecialReport < BaseReport
@@ -492,11 +542,9 @@ def make_district_reports slug
 end
 
 def make_area_reports slug
-  # project = get_project slug
-  # dataset = select_observations project: project, quality_grade: 'research', observed: (... LAST_TIME)
-  # make_history project, dataset
-  # neighbors = { projects: ZONES.keys.reject { |k| k == slug }, places: [] }
-  # make_comparison project, dataset, neighbors
+  report = AreaReport::new slug
+  report.write_history
+  report.write_comparison
 end
 
 def make_special_reports slug
