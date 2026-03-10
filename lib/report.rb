@@ -23,6 +23,7 @@ class BaseReport
 
   LAST_YEAR = today.year - 1
   LAST_TIME = finish_time year: LAST_YEAR
+  LAST_DATE_STR = "#{ LAST_YEAR }-12-31"
 
   def initialize slug
     @slug = slug
@@ -49,6 +50,7 @@ class BaseReport
       species_select = count_select.merge({ view: "species", hrank: "species", lrank: "species" })
       next_row[:count_link] = count_select
       next_row[:species_link] = species_select
+      next_row[:news_link] = nil
     end
   end
 
@@ -78,19 +80,23 @@ class BaseReport
     else
       [subject.title, '<i class="fa fa-briefcase"></i>']
     end
-    url = "https://www.inaturalist.org/#{subject.class.endpoint}/#{subject.id}"
-    "<a href=\"#{url}\">#{icon}  #{title}</a>"
+    url = "https://www.inaturalist.org/#{ subject.class.endpoint }/#{ subject.id }"
+    "<a href=\"#{ url }\">#{ icon }  #{ title }</a>"
   end
 
   def epilogue
     umbrella = get_project 'bioraznoobrazie-rayonov-sverdlovskoy-oblasti'
-    "<i>Присоединяйтесь к данному проекту — «#{ subject_html @project }».\nИ обратите внимание на зонтичный — «#{ subject_html umbrella }», а также соответствующие <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
+    "<i>Присоединяйтесь к данному проекту — #{ subject_html @project }.\nИ обратите внимание на зонтичный — #{ subject_html umbrella }, а также соответствующие <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
   end
 
-  def make_history
+  def make_history preamble: nil
     result = []
     result << '## История'
     result << ''
+    if preamble
+      result << preamble
+      result << ''
+    end
     #
     years = @dataset % :observed_year
     years.sort!
@@ -109,6 +115,11 @@ class BaseReport
       end
       count_select = @opts.merge({ project_id: @project.id, year: ds.key })
       species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
+      news_select = if news.count > 0 && news.count <= 500
+        species_select.merge({ taxon_ids: news.map { |ds| ds.key.id.to_s }.join(',') })
+      else
+        nil
+      end
       {
         year: ds.key,
         period: "<i class=\"glyphicon glyphicon-calendar\"></i>  #{ ds.key } год",
@@ -116,7 +127,8 @@ class BaseReport
         species: species.count,
         news: news.count,
         count_link: count_select,
-        species_link: species_select
+        species_link: species_select,
+        news_link: news_select
       }
     end
     if last.key != LAST_YEAR
@@ -206,9 +218,10 @@ class DistrictReport < BaseReport
         users = ds % :user
         users.each do |uds|
           user = uds.key
-          news_users[user] ||= { count: 0, species: 0 }
+          news_users[user] ||= { count: 0, species: 0, taxa: [] }
           news_users[user][:count] += uds.count
           news_users[user][:species] += 1
+          news_users[user][:taxa] << taxon
         end
         count_select = @opts.merge({ project_id: @project.id, year: LAST_YEAR, taxon_id: taxon.id })
         users_select = count_select.merge({ view: 'observers' })
@@ -230,7 +243,9 @@ class DistrictReport < BaseReport
       result << taxa_table.render
       result << ''
       users_rows = news_users.map do |key, value|
-        value.merge({ user: user_html(key) })
+        count_select = @opts.merge({ project_id: @project.id, year: LAST_YEAR, user_id: key.id, taxon_ids: value[:taxa].map(&:id).map(&:to_s).join(',') })
+        species_select = count_select.merge({ view: 'species' })
+        value.merge({ user: user_html(key), count_link: count_select, species_link: species_select })
       end
       users_rows.sort_by! { |r| [ -r[:species], -r[:count] ] }
       users_table = ReportTable::new do
@@ -324,7 +339,7 @@ class DistrictReport < BaseReport
       else
         total += value[:dataset]
       end
-      count_select = @opts.merge({ d2: LAST_TIME.xmlschema.gsub('+', '%2B') })
+      count_select = @opts.merge({ d2: LAST_DATE_STR })
       if key.is_a?(INatGet::Data::Model::Place)
         count_select.merge!({ place_id: key.id })
       else
@@ -359,7 +374,7 @@ class DistrictReport < BaseReport
     result.join("\n")
   end
 
-  def make_unique
+  def make_unique preamble: nil
     result = []
     @species = @dataset % :species
     uniques = @species
@@ -369,7 +384,11 @@ class DistrictReport < BaseReport
     if uniques.count > 0
       result << '## «Уники»'
       result << ''
-      result << 'Таксоны, наблюдавшиеся здесь, но не найденные ни у кого из соседей.'
+      if preamble
+        result << preamble
+      else
+        result << 'Таксоны, наблюдавшиеся здесь, но не найденные ни у кого из соседей.'
+      end
       result << ''
       uniques.sort!
       uniques_users = {}
@@ -378,11 +397,12 @@ class DistrictReport < BaseReport
         users = ds % :user
         users.each do |uds|
           user = uds.key
-          uniques_users[user] ||= { count: 0, species: 0 }
+          uniques_users[user] ||= { count: 0, species: 0, taxa: [] }
           uniques_users[user][:count] += uds.count
           uniques_users[user][:species] += 1
+          uniques_users[user][:taxa] << taxon
         end
-        count_select = @opts.merge({ project_id: @project.id, d2: LAST_TIME.xmlschema.gsub('+', '%2B'), taxon_id: taxon.id })
+        count_select = @opts.merge({ project_id: @project.id, d2: LAST_DATE_STR, taxon_id: taxon.id })
         users_select = count_select.merge({ view: 'observers' })
         {
           taxon: taxon_html(taxon),
@@ -402,7 +422,9 @@ class DistrictReport < BaseReport
       result << taxa_table.render
       result << ''
       users_rows = uniques_users.map do |key, value|
-        value.merge({ user: user_html(key) })
+        count_select = @opts.merge({ project_id: @project.id, d2: LAST_DATE_STR, user_id: key.id, taxon_ids: value[:taxa].map(&:id).map(&:to_s).join(',') })
+        species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
+        value.merge({ user: user_html(key), count_link: count_select, species_link: species_select })
       end
       users_rows.sort_by! { |r| [ -r[:species], -r[:count] ] }
       users_table = ReportTable::new do
@@ -440,7 +462,7 @@ class DistrictReport < BaseReport
       wanted_rows = wanted.map do |ds|
         taxon = ds.key
         users = ds % :user
-        count_select = @opts.merge(neighbors_select).merge({ d2: LAST_TIME.xmlschema.gsub('+', '%2B'), taxon_id: taxon.id })
+        count_select = @opts.merge(neighbors_select).merge({ d2: LAST_DATE_STR, taxon_id: taxon.id })
         users_select = count_select.merge({ view: 'observers' })
         {
           raw_taxon: taxon,
@@ -529,10 +551,176 @@ class AreaReport < DistrictReport
 
 end
 
-class SpecialReport < BaseReport
+class SpecialReport < DistrictReport
+
+  def initialize slug
+    super slug
+    @opts = {}
+  end
+
+  def load_data
+    @project = get_project @slug
+    @dataset = select_observations(project: @project, observed: (... LAST_TIME))
+  end
+
+  HISTORY_PREAMBLE = <<~TXT
+    <i>Учитываются все наблюдения, попавшие в проект, Но в подсчете видов — только виды и гибриды — старшие таксоны игнорируются, младшие приводятся к видам. Из-за этого выборки по наблюдениям и видам могут расходиться между собой.</i>
+  TXT
+
+  def load_neighbors
+    @opts = { quality_grade: 'research' }
+    @neighbors = {}
+    DISTRICTS.each do |key, _|
+      project = get_project key
+      dataset = select_observations(project: project, observed: (... LAST_TIME), **@opts)
+      species = dataset % :species
+      @neighbors[project] = { dataset: dataset, species: species, users: 0 }
+    end
+    @full_dataset = @dataset
+    @dataset = @dataset.where(**@opts)
+  end
+
+  UNIQUE_PREAMBLE = <<~TXT
+    <i>А здесь рассматриваются только наблюдения исследовательского уровня.</i>
+  TXT
+
+  def epilogue
+    umbrella = get_project "bioraznoobrazie-rayonov-sverdlovskoy-oblasti"
+    "<i>Обратите также внимание на зонтичный проект — #{ subject_html umbrella } — и соответствующие <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
+  end
+
+  def write_history
+    load_data
+    result = []
+    result << "Напомню, данный проект — #{ subject_html @project } — предназначен для отслеживания наблюдений," +
+              ' сделанных на территории Свердловской области, но не попадающих ни в один «нормальный» районный проект.' +
+              ' Непопадание такое может происходить из-за объективных причин: наблюдение совсем рядом с муниципальными' +
+              ' границами, или место наблюдения скрыто и прямоугольник скрытия попадает на такую границу; но зачастую' +
+              ' это происходит от того, что указанная точность неоправданно велика, и было бы неплохо, если б автор наблюдения' +
+              ' ее поправил...'
+    result << ''
+    result << make_history(preamble: HISTORY_PREAMBLE)
+    result << ''
+    load_neighbors
+    result << make_unique(preamble: UNIQUE_PREAMBLE)
+    result << ''
+    result << epilogue
+    result << ''
+    result << SIGNATURE
+    File.write "output/#{ @slug } - history.md", result.join("\n")
+  end
+
+  def make_radii
+    result = []
+    limits = [ [ 100_000, '😨 Больше 100 км' ], [ 10000, '😠 10–100 км' ], [ 1000, '🤔 1–10 км' ], [ 500, '😐 500 м – 1 км' ] ]
+    previous = nil
+    limits.each do |radius, title|
+      dataset = @full_dataset.where(accuracy: (radius ... previous), obscured: false)
+      users = dataset % :user
+      next if users.count == 0
+      users_rows = users.map do |ds|
+        user = ds.key
+        count_select = { project_id: @project.id, user_id: user.id, d2: LAST_DATE_STR, acc_above: radius, obscured: 'false' }
+        count_select.merge!({ acc_below: previous }) if previous
+        species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
+        species = ds % :species
+        {
+          user: user_html(user),
+          count: ds.count,
+          species: species.count,
+          count_link: count_select,
+          species_link: species_select
+        }
+      end
+      users_rows.sort_by! { |r| [ -r[:count], -r[:species] ] }
+      previous = radius
+      result << "\#\# #{ title }"
+      result << ''
+      table = ReportTable::new do
+        column :line_no, '#', width: '3em', align: 'right', auto: true
+        column :user, 'Наблюдатель'
+        column :count, 'Наблюдения', width: '8em', align: 'right'
+        column :species, 'Виды', width: '6em', align: 'right'
+      end
+      table << users_rows
+      result << table.render
+      result << ''
+    end
+    result.join("\n")
+  end
+
+  def write_radii
+    result = []
+    result << "Напомню, данный проект — #{ subject_html @project } — предназначен для отслеживания наблюдений," +
+              ' сделанных на территории Свердловской области, но не попадающих ни в один «нормальный» районный проект.' +
+              ' Непопадание такое может происходить из-за объективных причин: наблюдение совсем рядом с муниципальными' +
+              ' границами, или место наблюдения скрыто и прямоугольник скрытия попадает на такую границу; но зачастую' +
+              ' это происходит от того, что указанная точность неоправданно велика, и было бы неплохо, если б автор наблюдения' +
+              ' ее поправил...'
+    result << ''
+    result << 'Ниже представлены ссылки на наблюдения (по пользователям), с <em>открытыми</em> координатами и <em>очень</em> большими радиусами точности. <i>Учитываются все наблюдения, попавшие в проект.</i>'
+    result << ''
+    result << make_radii
+    result << ''
+    result << epilogue
+    result << ''
+    result << SIGNATURE
+    File.write "output/#{ @slug } - radii.md", result.join("\n")
+  end
+
 end
 
-class SummaryReport < BaseReport
+class SummaryReport < DistrictReport
+
+  def load_data
+    @opts = { quality_grade: 'research' }
+    @project = get_project @slug
+    DISTRICTS.each do |key, _|
+      project = get_project key
+      dataset = select_observations(project: project, observed: (... LAST_TIME), **@opts)
+      dataset.update!
+      unless @dataset
+        @dataset = dataset
+      else
+        @dataset += dataset
+      end
+    end
+    SPECIALS.each do |key, _|
+      project = get_project key
+      dataset = select_observations(project: project, observed: (... LAST_TIME), **@opts)
+      dataset.update!
+      unless @dataset
+        @dataset = dataset
+      else
+        @dataset += dataset
+      end
+    end
+  end
+
+  SUMMARY_PREAMLE = <<~TXT
+    Подведены итоги #{ LAST_YEAR } года в дочерних районных проектах. Итоги финальные в том смысле, что еще раз подводить их не имеет смысла, хотя, конечно, еще могут быть добавлены наблюдения из архивов, но вряд ли сильно меняющие общую картину.
+
+    Ниже сводные таблицы со ссылками на соответствующие проекты, в журналах которых можно увидеть историю по годам, новинки данного сезона и т.д.
+
+    В таблицах ниже показано количество наблюдений / видов / новинок — только по #{ LAST_YEAR } году и только исследовательского уровня. Сортировка по числу видов, лучшие результаты по числу наблюдений и новинок выделены жирным. «Лидер» — наблюдатель, зафиксировавший больше всего видов же.
+  TXT
+
+  def epilogue
+    "<i>Присоединяйтесь к проекту — #{ subject_html @project } и дочерним, а также обратите внимание на <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
+  end
+
+  def write_summary
+    result = []
+    result << SUMMARY_PREAMLE
+    result << ''
+    #
+    result << ''
+    result << epilogue
+    result << ''
+    result << SIGNATURE
+    File.write "output/#{ @slug } - summary.md", result.join("\n")
+  end
+
 end
 
 def make_district_reports slug
@@ -548,15 +736,13 @@ def make_area_reports slug
 end
 
 def make_special_reports slug
-  # project = get_project slug
-  # dataset = select_observations project: project, observed: (... LAST_TIME)
-  # make_history project, dataset, mode: :special
-  # make_radiuses project, dataset
+  report = SpecialReport::new slug
+  report.write_history
+  report.write_radii
 end
 
 def make_summary_report slug
-  # project = get_project slug
-  # dataset = select_observations project: project, quality_grade: 'research', observed: (... LAST_TIME)
-  # make_history project, dataset, mode: :summary
-  # make_summary project, dataset
+  report = SummaryReport::new slug
+  report.write_history
+  report.write_summary
 end
