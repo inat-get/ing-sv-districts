@@ -729,6 +729,7 @@ DISTRICTS = {
 
 ZONES = {
   'bioraznoobrazie-vostochnogo-okruga-sverdlovskoy-oblasti' => {
+    short: '<img src="https://static.inaturalist.org/projects/180214-icon-span2.png" style="height:36px;vertical-align:bottom;"> Восточный округ',
     content: [
       'bioraznoobrazie-alapaevska-i-alapaevskogo-rayona',
       'bioraznoobrazie-artyomovskogo-rayona',
@@ -746,6 +747,7 @@ ZONES = {
     ],
   },
   'bioraznoobrazie-gornozavodskogo-okruga-sverdlovskoy-oblasti' => {
+    short: '<img src="https://static.inaturalist.org/projects/180216-icon-span2.png" style="height:36px;vertical-align:bottom;"> Горнозаводской округ',
     content: [
       'bioraznoobrazie-verhnesaldinskogo-rayona',
       'bioraznoobrazie-kirovgrada-i-verhnego-tagila',
@@ -757,6 +759,7 @@ ZONES = {
     ],
   },
   'bioraznoobrazie-zapadnogo-okruga-sverdlovskoy-oblasti' => {
+    short: '<img src="https://static.inaturalist.org/projects/180212-icon-span2.png" style="height:36px;vertical-align:bottom;"> Западный округ',
     content: [
       'bioraznoobrazie-artinskogo-rayona',
       'bioraznoobrazie-achitskogo-rayona',
@@ -770,6 +773,7 @@ ZONES = {
     ],
   },
   'bioraznoobrazie-severnogo-okruga-sverdlovskoy-oblasti' => {
+    short: '<img src="https://static.inaturalist.org/projects/180218-icon-span2.png" style="height:36px;vertical-align:bottom;"> Северный округ',
     content: [
       'bioraznoobrazie-verhoturskogo-rayona',
       'bioraznoobrazie-garinskogo-rayona',
@@ -786,6 +790,7 @@ ZONES = {
     ],
   },
   'bioraznoobrazie-yuzhnogo-okruga-sverdlovskoy-oblasti' => {
+    short: '<img src="https://static.inaturalist.org/projects/180213-icon-span2.png" style="height:36px;vertical-align:bottom;"> Южный округ',
     content: [
       'bioraznoobrazie-asbesta',
       'bioraznoobrazie-beloyarskogo-rayona',

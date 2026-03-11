@@ -78,7 +78,7 @@ class BaseReport
     title, icon = if subject.is_a?(INatGet::Data::Model::Place)
       [subject.display_name || subject.name, '<i class="fa fa-globe"></i>']
     else
-      [subject.title, '<i class="fa fa-briefcase"></i>']
+      [subject.title.gsub(' области', ' области').gsub(' района', ' района').gsub(' округа', ' округа').gsub(' и ', ' и '), '<i class="fa fa-briefcase"></i>']
     end
     url = "https://www.inaturalist.org/#{ subject.class.endpoint }/#{ subject.id }"
     "<a href=\"#{ url }\">#{ icon }  #{ title }</a>"
@@ -709,11 +709,184 @@ class SummaryReport < DistrictReport
     "<i>Присоединяйтесь к проекту — #{ subject_html @project } и дочерним, а также обратите внимание на <a href=\"https://t.me/inat_sverdlobl\">канал и чат в Telegram</a>.</i>"
   end
 
+  def make_areas
+    areas = {}
+    ZONES.each do |key, value|
+      project = get_project key
+      dataset = nil
+      value[:content].each do |slug|
+        prj = get_project slug
+        dts = select_observations(project: prj, observed: (... LAST_TIME), **@opts)
+        dts.update!
+        unless dataset
+          dataset = dts
+        else
+          dataset += dts
+        end
+      end
+      areas[project] = dataset
+    end
+    e_prj = get_project 'bioraznoobrazie-ekaterinburga'
+    e_dts = select_observations(project: e_prj, observed: (... LAST_TIME), **@opts)
+    areas[e_prj] = e_dts
+    m_prj = get_project 'mezhmunitsipalnoe-bioraznoobrazie-sverdlovskoy-oblasti'
+    m_dts = select_observations(project: m_prj, observed: (... LAST_TIME), **@opts)
+    areas[m_prj] = m_dts
+    rows = []
+    areas.each do |project, dataset|
+      project_html = if project == m_prj
+        subject_html project
+      else
+        "<b>#{ subject_html project }</b>"
+      end
+      fresh = dataset.where(observed_year: LAST_YEAR)
+      old = dataset - fresh
+      fresh_species = fresh % :species
+      old_species = old % :species
+      new_species = fresh_species - old_species
+      count_select = if fresh.count > 0
+        @opts.merge({ project_id: project.id, year: LAST_YEAR })
+      else
+        nil
+      end
+      species_select = if fresh_species.count > 0
+        count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
+      else
+        nil
+      end
+      news_select = if new_species.count > 0 && new_species.count <= 500
+        species_select.merge({ taxon_ids: new_species.map { |ds| ds.key.id.to_s }.join(',') })
+      else
+        nil
+      end
+      users = fresh % :user
+      user_species = users.map do |ds|
+        user = ds.key
+        species = ds % :species
+        { user: user, species: species.count }
+      end
+      maximum = unless user_species.empty?
+        user_species.map { |us| us[:species] }.max
+      else
+        0
+      end
+      leaders = unless project == m_prj || maximum == 0
+        user_species.select { |us| us[:species] == maximum }.map { |us| us[:user] }
+      else
+        []
+      end
+      row = {
+        slug: project.slug,
+        project: project_html,
+        count: fresh.count,
+        species: fresh_species.count,
+        news: new_species.count,
+        leaders: leaders.map { |u| "​@#{u.login}" }.join(', '),
+        count_link: count_select,
+        species_link: species_select,
+        news_link: news_select
+      }
+      # row[:style] = 'font-weight:bold;' unless project == m_prj
+      rows << row
+    end
+    rows.sort_by! { |r| [ -r[:species], -r[:news], -r[:count] ] }
+    max_count = rows.map { it[:count] }.max
+    rows.each { |r| r[:count] = "<b>#{ r[:count] }</b>" if r[:count] == max_count }
+    max_species = rows.map { it[:species] }.max
+    rows.each { |r| r[:species] = "<b>#{ r[:species] }</b>" if r[:species] == max_species }
+    max_news = rows.map { it[:news] }.max
+    rows.each { |r| r[:news] = "<b>#{ r[:news] }</b>" if r[:news] == max_news }
+    table = ReportTable::new do
+      column :line_no, '#', width: '3em', align: 'right', auto: true
+      column :project, 'Проект'
+      column :count, 'Наблюдения', width: '8em', align: 'right'
+      column :species, 'Виды', width: '6em', align: 'right'
+      column :news, 'Новинки', width: '6em', align: 'right'
+      column :leaders, 'Лидер', width: '10em'
+    end
+    table << rows
+    @order = rows.map { it[:slug] } - [ 'mezhmunitsipalnoe-bioraznoobrazie-sverdlovskoy-oblasti', 'bioraznoobrazie-ekaterinburga']
+    result = []
+    result << '## Административные округа и Екатеринбург'
+    result << ''
+    result << 'И сюда же «межмуниципальные» наблюдения — надо же их куда-нибудь прислонить.'
+    result << ''
+    result << table.render
+    result << ''
+    result.join("\n")
+  end
+
+  def make_one_area slug
+    result = []
+    data = ZONES[slug]
+    result << "\#\# #{ data[:short] }"
+    result << ''
+    rows = []
+    data[:content].each do |s|
+      project = get_project s
+      dataset = select_observations(project: project, observed: (... LAST_TIME), **@opts)
+      fresh = dataset.where(observed_year: LAST_YEAR)
+      fresh_species = fresh % :species
+      old_species = (dataset - fresh) % :species
+      new_species = fresh_species - old_species
+      users = fresh % :user
+      user_species = users.map do |ds|
+        user = ds.key
+        species = ds % :species
+        { user: user, species: species.count }
+      end
+      leaders = unless user_species.empty?
+        maximum = user_species.map { it[:species] }.max
+        maximum > 1 ? user_species.select { it[:species] == maximum }.map { it[:user] } : []
+      else
+        []
+      end
+      count_select = fresh.count > 0 ? @opts.merge({ project_id: project.id, year: LAST_YEAR }) : nil
+      species_select = fresh_species.count > 0 ? count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' }) : nil
+      news_select = new_species.count > 0 && new_species.count <= 500 ? species_select.merge({ taxon_ids: new_species.map { it.key.id.to_s }.join(',') }) : nil
+      row = {
+        project: subject_html(project),
+        count: fresh.count,
+        species: fresh_species.count,
+        news: new_species.count,
+        leaders: leaders.map { "​@#{ it.login }" }.join(', '),
+        count_link: count_select,
+        species_link: species_select,
+        news_link: news_select
+      }
+      rows << row
+    end
+    rows.sort_by! { |r| [ -r[:species], -r[:news], -r[:count] ] }
+    max_count = rows.map { it[:count] }.max
+    max_species = rows.map { it[:species] }.max
+    max_news = rows.map { it[:news] }.max
+    rows.each { |r| r[:count] = "<b>#{ r[:count] }</b>" if r[:count] == max_count }
+    rows.each { |r| r[:species] = "<b>#{ r[:species] }</b>" if r[:species] == max_species }
+    rows.each { |r| r[:news] = "<b>#{ r[:news] }</b>" if r[:news] == max_news }
+    table = ReportTable::new do
+      column :line_no, "#", width: "3em", align: "right", auto: true
+      column :project, "Проект"
+      column :count, "Наблюдения", width: "8em", align: "right"
+      column :species, "Виды", width: "6em", align: "right"
+      column :news, "Новинки", width: "6em", align: "right"
+      column :leaders, "Лидер", width: "10em"
+    end
+    table << rows
+    result << table.render
+    result << ''
+    result.join("\n")
+  end
+
   def write_summary
     result = []
     result << SUMMARY_PREAMLE
     result << ''
-    #
+    result << make_areas
+    result << ''
+    @order.each do |slug|
+      result << make_one_area(slug)
+      result << ''
+    end
     result << ''
     result << epilogue
     result << ''
