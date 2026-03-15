@@ -266,7 +266,7 @@ DISTRICTS = {
   'bioraznoobrazie-kamyshlova-i-kamyshlovskogo-rayona' => {
     neighbors: {
       projects: [
-        'bioraznoobrazie-artyomovskogo-rayona',
+        # 'bioraznoobrazie-artyomovskogo-rayona',
         'bioraznoobrazie-bogdanovichskogo-rayona',
         'bioraznoobrazie-irbita-i-irbitskogo-rayona',
         'bioraznoobrazie-pyshminskogo-rayona',

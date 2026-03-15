@@ -453,6 +453,7 @@ class DistrictReport < BaseReport
       neighbors_select.merge!({ place_id: places.map(&:id).map(&:to_s).join(',') })
     end
     commons = List::commons(2, *@neighbors.values.map { |v| v[:species] })
+    # result << "DEBUG: #{ (@species&.count).inspect }"
     wanted = commons - @species
     if wanted.count > 0
       result << '## «Разыскиваются»'
