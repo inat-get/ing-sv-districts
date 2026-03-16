@@ -621,7 +621,7 @@ class SpecialReport < DistrictReport
       next if users.count == 0
       users_rows = users.map do |ds|
         user = ds.key
-        count_select = { project_id: @project.id, user_id: user.id, d2: LAST_DATE_STR, acc_above: radius, obscured: 'false' }
+        count_select = { project_id: @project.id, user_id: user.id, d2: LAST_DATE_STR, acc_above: radius, geoprivacy: 'open', taxon_geoprivacy: 'open' }
         count_select.merge!({ acc_below: previous }) if previous
         species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
         species = ds % :species
