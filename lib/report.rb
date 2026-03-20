@@ -212,17 +212,9 @@ class DistrictReport < BaseReport
       result << 'Таксоны, наблюдавшиеся в этом сезоне впервые.'
       result << ''
       @news_ls.sort!
-      news_users = {}
       news_rows = @news_ls.map do |ds|
         taxon = ds.key
         users = ds % :user
-        users.each do |uds|
-          user = uds.key
-          news_users[user] ||= { count: 0, species: 0, taxa: [] }
-          news_users[user][:count] += uds.count
-          news_users[user][:species] += 1
-          news_users[user][:taxa] << taxon
-        end
         count_select = @opts.merge({ project_id: @project.id, year: LAST_YEAR, taxon_id: taxon.id })
         users_select = count_select.merge({ view: 'observers' })
         {
@@ -242,10 +234,19 @@ class DistrictReport < BaseReport
       taxa_table << news_rows
       result << taxa_table.render
       result << ''
-      users_rows = news_users.map do |key, value|
-        count_select = @opts.merge({ project_id: @project.id, year: LAST_YEAR, user_id: key.id, taxon_ids: value[:taxa].map(&:id).map(&:to_s).join(',') })
-        species_select = count_select.merge({ view: 'species' })
-        value.merge({ user: user_html(key), count_link: count_select, species_link: species_select })
+      users_ls = @news_ls.to_dataset % :user
+      users_rows = users_ls.map do |ds|
+        user = ds.key
+        species = ds % :species
+        count_select = @opts.merge({ project_id: @project.id, year: LAST_YEAR, user_id: user.id, taxon_ids: species.map { it.key.id.to_s }.join(',') })
+        species_select = count_select.merge({ view: 'species', hrank: 'species', lrank: 'species' })
+        {
+          user: user_html(user),
+          count: ds.count,
+          species: species.count,
+          count_link: count_select,
+          species_link: species_select
+        }
       end
       users_rows.sort_by! { |r| [ -r[:species], -r[:count] ] }
       users_table = ReportTable::new do
@@ -391,17 +392,9 @@ class DistrictReport < BaseReport
       end
       result << ''
       uniques.sort!
-      uniques_users = {}
       uniques_rows = uniques.map do |ds|
         taxon = ds.key
         users = ds % :user
-        users.each do |uds|
-          user = uds.key
-          uniques_users[user] ||= { count: 0, species: 0, taxa: [] }
-          uniques_users[user][:count] += uds.count
-          uniques_users[user][:species] += 1
-          uniques_users[user][:taxa] << taxon
-        end
         count_select = @opts.merge({ project_id: @project.id, d2: LAST_DATE_STR, taxon_id: taxon.id })
         users_select = count_select.merge({ view: 'observers' })
         {
@@ -421,10 +414,19 @@ class DistrictReport < BaseReport
       taxa_table << uniques_rows
       result << taxa_table.render
       result << ''
-      users_rows = uniques_users.map do |key, value|
-        count_select = @opts.merge({ project_id: @project.id, d2: LAST_DATE_STR, user_id: key.id, taxon_ids: value[:taxa].map(&:id).map(&:to_s).join(',') })
-        species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
-        value.merge({ user: user_html(key), count_link: count_select, species_link: species_select })
+      users_ls = uniques.to_dataset % :user
+      users_rows = users_ls.map do |ds|
+        user = ds.key
+        species = ds % :species
+        count_select = @opts.merge({ project_id: @project.id, d2: LAST_DATE_STR, user_id: user.id, taxon_ids: species.map { it.key.id.to_s }.join(',') })
+        species_select = count_select.merge({ view: 'species', hrank: 'species', lrank: 'species' })
+        {
+          user: user_html(user),
+          count: ds.count,
+          species: species.count,
+          count_link: count_select,
+          species_link: species_select
+        }
       end
       users_rows.sort_by! { |r| [ -r[:species], -r[:count] ] }
       users_table = ReportTable::new do
