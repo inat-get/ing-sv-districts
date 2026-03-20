@@ -1,0 +1,7 @@
+
+database:
+  connect: 'postgres://localhost/inat_get'
+  user: 'postgres'
+
+caching:
+  update: 1d

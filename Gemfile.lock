@@ -1,3 +1,19 @@
+PATH
+  remote: ../inat-get
+  specs:
+    inat-get (0.9.0.17)
+      faraday (~> 2.14)
+      faraday-http-cache (~> 2.6)
+      faraday-retry (~> 2.3)
+      faraday-typhoeus (~> 2.0)
+      is-deep (~> 0.8)
+      is-dsl (~> 0.8)
+      is-duration (~> 0.8.4)
+      is-enum (~> 0.8.10)
+      is-range (~> 0.8.2)
+      is-term (~> 0.8.4.10)
+      sequel (~> 5.101)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -15,7 +31,7 @@ GEM
       net-http (~> 0.5)
     faraday-retry (2.4.0)
       faraday (~> 2.0)
-    faraday-typhoeus (1.1.0)
+    faraday-typhoeus (2.0.0)
       faraday (~> 2.0)
       typhoeus (~> 1.4)
     ffi (1.17.3-aarch64-linux-gnu)
@@ -28,18 +44,6 @@ GEM
     ffi (1.17.3-x86_64-darwin)
     ffi (1.17.3-x86_64-linux-gnu)
     ffi (1.17.3-x86_64-linux-musl)
-    inat-get (0.9.0.14)
-      faraday (~> 2.14)
-      faraday-http-cache (~> 2.6)
-      faraday-retry (~> 2.3)
-      faraday-typhoeus (~> 1.1)
-      is-deep (~> 0.8)
-      is-dsl (~> 0.8)
-      is-duration (~> 0.8.4)
-      is-enum (~> 0.8.10)
-      is-range (~> 0.8.2)
-      is-term (~> 0.8.4.10)
-      sequel (~> 5.101)
     is-boolean (0.8.0)
     is-deep (0.8.0)
     is-dsl (0.8.0)
@@ -51,10 +55,17 @@ GEM
       is-boolean (~> 0.8)
       is-duration (~> 0.8.4)
       tty-screen (~> 0.8)
-    json (2.19.1)
+    json (2.19.2)
     logger (1.7.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
+    pg (1.6.3)
+    pg (1.6.3-aarch64-linux)
+    pg (1.6.3-aarch64-linux-musl)
+    pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-darwin)
+    pg (1.6.3-x86_64-linux)
+    pg (1.6.3-x86_64-linux-musl)
     sequel (5.102.0)
       bigdecimal
     sqlite3 (2.9.2-aarch64-linux-gnu)
@@ -73,6 +84,7 @@ GEM
     uri (1.1.1)
 
 PLATFORMS
+  aarch64-linux
   aarch64-linux-gnu
   aarch64-linux-musl
   arm-linux-gnu
@@ -85,7 +97,8 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  inat-get (~> 0.9.0.14)
+  inat-get!
+  pg
   sqlite3
 
 CHECKSUMS
@@ -95,7 +108,7 @@ CHECKSUMS
   faraday-http-cache (2.6.1) sha256=7772ae61c5fe1c0243452dec1f069b15bcc3304e9436e4f8545ccdb5963c4285
   faraday-net_http (3.4.2) sha256=f147758260d3526939bf57ecf911682f94926a3666502e24c69992765875906c
   faraday-retry (2.4.0) sha256=7b79c48fb7e56526faf247b12d94a680071ff40c9fda7cf1ec1549439ad11ebe
-  faraday-typhoeus (1.1.0) sha256=24c6147c213818dde3ebc50ae47ab92f9a7e554903aa362707126f749c6890e7
+  faraday-typhoeus (2.0.0) sha256=7a459529d782994caf8ce89ca181df3adb89dd471b8ab0b3851936ab566b4dd1
   ffi (1.17.3-aarch64-linux-gnu) sha256=28ad573df26560f0aedd8a90c3371279a0b2bd0b4e834b16a2baa10bd7a97068
   ffi (1.17.3-aarch64-linux-musl) sha256=020b33b76775b1abacc3b7d86b287cef3251f66d747092deec592c7f5df764b2
   ffi (1.17.3-arm-linux-gnu) sha256=5bd4cea83b68b5ec0037f99c57d5ce2dd5aa438f35decc5ef68a7d085c785668
@@ -106,7 +119,7 @@ CHECKSUMS
   ffi (1.17.3-x86_64-darwin) sha256=1f211811eb5cfaa25998322cdd92ab104bfbd26d1c4c08471599c511f2c00bb5
   ffi (1.17.3-x86_64-linux-gnu) sha256=3746b01f677aae7b16dc1acb7cb3cc17b3e35bdae7676a3f568153fb0e2c887f
   ffi (1.17.3-x86_64-linux-musl) sha256=086b221c3a68320b7564066f46fed23449a44f7a1935f1fe5a245bd89d9aea56
-  inat-get (0.9.0.14) sha256=0fdb5eec3a8d6904e2bed0eb50be788165290e7321bef224a2325019836d80a4
+  inat-get (0.9.0.17)
   is-boolean (0.8.0) sha256=a470c0407307fc3e71e785ac3847d500abd157e8874e94747a713050572afdb3
   is-deep (0.8.0) sha256=49b4bef09b6520fedf4620c50878b1f04d8fb78a51352fac0591d6d605f7fe04
   is-dsl (0.8.0) sha256=fc66508e85da3c9f4cdcdc31e9bb078f2aef791dfe432db1db931c69c97020e6
@@ -114,9 +127,16 @@ CHECKSUMS
   is-enum (0.8.10) sha256=7f962fce7ac34409fd211a7c53b6ebb4a666337a6137f97226f22189969c45e2
   is-range (0.8.2) sha256=81a761cd6ac30a61352b267644178691a517ba1b02ef402ca319dcf86e45d43a
   is-term (0.8.4.10) sha256=953f4b45c8cec8cf0e1ab0508142aa620480bee681bf0d58b2cf1125a453ff14
-  json (2.19.1) sha256=dd94fdc59e48bff85913829a32350b3148156bc4fd2a95a2568a78b11344082d
+  json (2.19.2) sha256=e7e1bd318b2c37c4ceee2444841c86539bc462e81f40d134cf97826cb14e83cf
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   net-http (0.9.1) sha256=25ba0b67c63e89df626ed8fac771d0ad24ad151a858af2cc8e6a716ca4336996
+  pg (1.6.3) sha256=1388d0563e13d2758c1089e35e973a3249e955c659592d10e5b77c468f628a99
+  pg (1.6.3-aarch64-linux) sha256=0698ad563e02383c27510b76bf7d4cd2de19cd1d16a5013f375dd473e4be72ea
+  pg (1.6.3-aarch64-linux-musl) sha256=06a75f4ea04b05140146f2a10550b8e0d9f006a79cdaf8b5b130cde40e3ecc2c
+  pg (1.6.3-arm64-darwin) sha256=7240330b572e6355d7c75a7de535edb5dfcbd6295d9c7777df4d9dddfb8c0e5f
+  pg (1.6.3-x86_64-darwin) sha256=ee2e04a17c0627225054ffeb43e31a95be9d7e93abda2737ea3ce4a62f2729d6
+  pg (1.6.3-x86_64-linux) sha256=5d9e188c8f7a0295d162b7b88a768d8452a899977d44f3274d1946d67920ae8d
+  pg (1.6.3-x86_64-linux-musl) sha256=9c9c90d98c72f78eb04c0f55e9618fe55d1512128e411035fe229ff427864009
   sequel (5.102.0) sha256=c25bb85a44ae59b3ed41ca7c32c33316cf81a6fcaeabedb4036ba141dde70919
   sqlite3 (2.9.2-aarch64-linux-gnu) sha256=eeb86db55645b85327ba75129e3614658d974bf4da8fdc87018a0d42c59f6e42
   sqlite3 (2.9.2-aarch64-linux-musl) sha256=4feff91fb8c2b13688da34b5627c9d1ed9cedb3ee87a7114ec82209147f07a6d
