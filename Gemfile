@@ -4,4 +4,4 @@ source "https://rubygems.org"
 
 gem 'sqlite3'
 gem 'pg'
-gem 'inat-get', '~> 0.9.0.18'
+gem 'inat-get', '~> 0.9.2'
