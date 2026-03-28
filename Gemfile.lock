@@ -1,3 +1,19 @@
+PATH
+  remote: ../inat-get
+  specs:
+    inat-get (0.9.1)
+      faraday (~> 2.14)
+      faraday-http-cache (~> 2.6)
+      faraday-retry (~> 2.3)
+      faraday-typhoeus (~> 2.0)
+      is-deep (~> 0.8)
+      is-dsl (~> 0.8)
+      is-duration (~> 0.8.4)
+      is-enum (~> 0.8.10)
+      is-range (~> 0.8.2)
+      is-term (~> 0.8.4.10)
+      sequel (~> 5.101)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -28,18 +44,6 @@ GEM
     ffi (1.17.3-x86_64-darwin)
     ffi (1.17.3-x86_64-linux-gnu)
     ffi (1.17.3-x86_64-linux-musl)
-    inat-get (0.9.0.18)
-      faraday (~> 2.14)
-      faraday-http-cache (~> 2.6)
-      faraday-retry (~> 2.3)
-      faraday-typhoeus (~> 2.0)
-      is-deep (~> 0.8)
-      is-dsl (~> 0.8)
-      is-duration (~> 0.8.4)
-      is-enum (~> 0.8.10)
-      is-range (~> 0.8.2)
-      is-term (~> 0.8.4.10)
-      sequel (~> 5.101)
     is-boolean (0.8.0)
     is-deep (0.8.0)
     is-dsl (0.8.0)
@@ -93,7 +97,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  inat-get (~> 0.9.0.18)
+  inat-get!
   pg
   sqlite3
 
@@ -115,7 +119,7 @@ CHECKSUMS
   ffi (1.17.3-x86_64-darwin) sha256=1f211811eb5cfaa25998322cdd92ab104bfbd26d1c4c08471599c511f2c00bb5
   ffi (1.17.3-x86_64-linux-gnu) sha256=3746b01f677aae7b16dc1acb7cb3cc17b3e35bdae7676a3f568153fb0e2c887f
   ffi (1.17.3-x86_64-linux-musl) sha256=086b221c3a68320b7564066f46fed23449a44f7a1935f1fe5a245bd89d9aea56
-  inat-get (0.9.0.18) sha256=10ea7ae1b061bf9e4e4c95b6efceb7d1c2c16d88d46e64fa35127e31fc0622ce
+  inat-get (0.9.1)
   is-boolean (0.8.0) sha256=a470c0407307fc3e71e785ac3847d500abd157e8874e94747a713050572afdb3
   is-deep (0.8.0) sha256=49b4bef09b6520fedf4620c50878b1f04d8fb78a51352fac0591d6d605f7fe04
   is-dsl (0.8.0) sha256=fc66508e85da3c9f4cdcdc31e9bb078f2aef791dfe432db1db931c69c97020e6
