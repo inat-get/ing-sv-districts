@@ -1,0 +1,2 @@
+database:
+  connect: 'sqlite:///tmp/inat.db'
