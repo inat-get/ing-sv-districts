@@ -63,10 +63,18 @@ DISTRICTS.each do |key, _|
   rows = users.map do |ds|
     user = ds.key
     species = ds % :species
+    count_select = { created_year: year, created_month: month, user_id: user.id, project_id: project.id }
+    if species.count > 0
+      species_select = count_select.merge({ hrank: 'species', lrank: 'species', view: 'species' })
+    else
+      species_select = nil
+    end
     {
       user: user_html(user),
       count: ds.count,
-      species: species.count
+      species: species.count,
+      count_link: count_select,
+      species_link: species_select
     }
   end
   table = ReportTable::new do
@@ -75,6 +83,7 @@ DISTRICTS.each do |key, _|
     column :count, 'Наблюдения', width: '8em', align: 'right'
     column :species, 'Виды', width: '6em', align: 'right'
   end
+  rows.sort_by! { |r| [-r[:species], -r[:count]] }
   table << rows
   result = []
   result << "За последнее время (#{ month_text }) проект пополнился новыми наблюдениями, в том числе от тех, кто недавно зарегистрировался на iNaturalist."
@@ -85,7 +94,7 @@ DISTRICTS.each do |key, _|
   result << ''
   result << table.render
   result << ''
-  result << "Рекомендую присоединится как к данному проекту — «#{ subject_html(project) }», так и к зонтичному проекту, объединяющему районы нашей области — «#{ subject_html(umbrella) }»."
+  result << "Рекомендую присоединится как к данному проекту — «#{ subject_html(project) }», так и к зонтичному проекту, объединяющему районы нашей области — **«#{ subject_html(umbrella) }»**."
   result << ''
   result << 'Полезные материалы:'
   result << ''
